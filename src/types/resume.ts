@@ -9,9 +9,12 @@ export type StepId =
   | "optimize"
   | "final-resume"
   | "interview"
+  | "template"
   | "export";
 
 export type StepStatus = "pending" | "active" | "completed" | "disabled";
+
+export type ResumeFlowMode = "optimize" | "direct";
 
 export type EvidenceStrength = "strong" | "medium" | "weak" | "none";
 
@@ -103,12 +106,29 @@ export interface ProjectExperience {
   bullets: string[];
 }
 
+export type ResumeStandardSectionId =
+  | "summary"
+  | "coreSkills"
+  | "workExperience"
+  | "projectExperience"
+  | "skillsAndTools"
+  | "education";
+
+export type ResumeSectionId = ResumeStandardSectionId | `custom:${string}`;
+
+export interface CustomResumeSection {
+  id: string;
+  title: string;
+  content: string;
+}
+
 export interface FinalResume {
   personalInfo: {
     name: string;
     email: string;
     phone: string;
     location: string;
+    portfolio: string;
   };
   jobIntent: string;
   summary: string;
@@ -118,9 +138,12 @@ export interface FinalResume {
   skillsAndTools: string[];
   education: {
     school: string;
+    major: string;
     degree: string;
     period: string;
   };
+  sectionOrder: ResumeSectionId[];
+  customSections: CustomResumeSection[];
 }
 
 export interface InterviewQuestion {

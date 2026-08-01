@@ -10,6 +10,7 @@ import {
   FileText,
   GitCompare,
   MessageSquare,
+  Palette,
   Sparkles,
   Target,
 } from "lucide-react";
@@ -24,21 +25,28 @@ const STEPS: { id: StepId; label: string; icon: React.ElementType }[] = [
   { id: "match", label: "匹配分析", icon: GitCompare },
   { id: "follow-up", label: "经历追问", icon: MessageSquare },
   { id: "optimize", label: "简历优化", icon: Sparkles },
-  { id: "final-resume", label: "最终简历", icon: ClipboardList },
+  { id: "final-resume", label: "编辑简历", icon: ClipboardList },
   { id: "interview", label: "面试准备", icon: Brain },
+  { id: "template", label: "选择模板", icon: Palette },
   { id: "export", label: "导出结果", icon: Download },
 ];
 
 export function StepSidebar() {
-  const { setCurrentStep, getStepStatus, analysisResult } = useResumeStore();
+  const { setCurrentStep, getStepStatus, analysisResult, flowMode } = useResumeStore();
+  const visibleSteps =
+    flowMode === "direct"
+      ? STEPS.filter((step) => ["input", "final-resume", "template", "export"].includes(step.id))
+      : STEPS;
 
   return (
-    <aside className="flex w-56 shrink-0 flex-col border-r border-neutral-200 bg-white">
+    <aside className="hidden w-56 shrink-0 flex-col border-r border-neutral-200 bg-white md:flex">
       <div className="border-b border-neutral-200 px-4 py-3">
-        <p className="text-xs font-medium uppercase tracking-wider text-neutral-400">分析流程</p>
+        <p className="text-xs font-medium text-neutral-400">
+          {flowMode === "direct" ? "快速编辑导出" : "岗位优化流程"}
+        </p>
       </div>
       <nav className="flex-1 overflow-y-auto p-2">
-        {STEPS.map((step, index) => {
+        {visibleSteps.map((step, index) => {
           const status = getStepStatus(step.id);
           const Icon = step.icon;
           const isDisabled = status === "disabled";
@@ -74,7 +82,7 @@ export function StepSidebar() {
           );
         })}
       </nav>
-      {analysisResult && (
+      {analysisResult && flowMode === "optimize" && (
         <div className="border-t border-neutral-200 p-3">
           <p className="text-xs text-neutral-400">整体匹配度</p>
           <p className="text-2xl font-semibold tabular-nums text-neutral-900">

@@ -1,6 +1,7 @@
 "use client";
 
-import { Loader2, Sparkles, Wand2 } from "lucide-react";
+import { ChangeEvent, useState } from "react";
+import { FilePenLine, FileUp, Loader2, Sparkles, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,13 +17,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { SectionTitle } from "@/components/shared/ui-helpers";
 import { useResumeStore } from "@/store/resume-store";
 import { runResumeAnalysis } from "@/services/ai/resumeAgent";
+import { parseResumeFile } from "@/lib/resume-file-parser";
 import type { CompanyType, JobStage } from "@/types/resume";
 
 export function InputStep() {
   const {
     userInput,
+    draftResume,
     setUserInput,
     loadExampleData,
+    startDirectEditing,
     isAnalyzing,
     analysisError,
     setAnalyzing,
@@ -30,6 +34,8 @@ export function InputStep() {
     setAnalysisError,
     setCurrentStep,
   } = useResumeStore();
+  const [resumeParseStatus, setResumeParseStatus] = useState<string | null>(null);
+  const [resumeParseError, setResumeParseError] = useState<string | null>(null);
 
   const handleAnalyze = async () => {
     if (!userInput.targetRole || !userInput.jobDescription || !userInput.originalResume) {
@@ -52,20 +58,52 @@ export function InputStep() {
     userInput.targetRole.trim() &&
     userInput.jobDescription.trim() &&
     userInput.originalResume.trim();
+  const canDirectEdit = Boolean(userInput.originalResume.trim() || draftResume);
+
+  const handleResumeFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setResumeParseError(null);
+    setResumeParseStatus("正在读取简历文件...");
+
+    try {
+      const text = await parseResumeFile(file, setResumeParseStatus);
+      if (!text.trim()) {
+        throw new Error("未识别到有效简历文字，请换一份更清晰的 PDF 或图片");
+      }
+      setUserInput({ originalResume: text });
+      setResumeParseStatus(`已从「${file.name}」识别出 ${text.length} 个字符，可继续编辑`);
+    } catch (error) {
+      setResumeParseError(error instanceof Error ? error.message : "简历文件解析失败");
+      setResumeParseStatus(null);
+    } finally {
+      event.target.value = "";
+    }
+  };
 
   return (
     <div>
       <SectionTitle
         title="输入材料"
-        description="填写目标岗位信息与原始简历，Agent 将基于 JD 进行定制分析与优化"
+        description="上传简历后可直接编辑导出，也可以补充目标 JD 进行定制分析与优化"
       />
 
-      <div className="mb-4 flex gap-2">
+      <div className="mb-4 flex flex-wrap gap-2">
         <Button variant="outline" size="sm" onClick={loadExampleData}>
           <Wand2 className="h-3.5 w-3.5" />
           使用示例数据
         </Button>
-        <Button size="sm" onClick={handleAnalyze} disabled={!canAnalyze || isAnalyzing}>
+        <Button size="sm" onClick={startDirectEditing} disabled={!canDirectEdit || isAnalyzing}>
+          <FilePenLine className="h-3.5 w-3.5" />
+          {userInput.originalResume.trim() ? "直接编辑并导出" : "继续上次编辑"}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleAnalyze}
+          disabled={!canAnalyze || isAnalyzing}
+        >
           {isAnalyzing ? (
             <>
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -176,13 +214,44 @@ export function InputStep() {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm">原始简历</CardTitle>
-            <CardDescription>粘贴当前简历全文</CardDescription>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="text-sm">原始简历</CardTitle>
+                <CardDescription>上传 PDF / 图片自动解析，或直接粘贴当前简历全文</CardDescription>
+              </div>
+              <Button asChild variant="outline" size="sm">
+                <label className={resumeParseStatus?.startsWith("正在") ? "pointer-events-none" : ""}>
+                  {resumeParseStatus?.startsWith("正在") ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <FileUp className="h-3.5 w-3.5" />
+                  )}
+                  上传简历
+                  <input
+                    className="hidden"
+                    type="file"
+                    accept="application/pdf,image/png,image/jpeg,image/webp"
+                    onChange={handleResumeFileUpload}
+                    disabled={Boolean(resumeParseStatus?.startsWith("正在"))}
+                  />
+                </label>
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
+            {resumeParseStatus && (
+              <div className="rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs text-neutral-600">
+                {resumeParseStatus}
+              </div>
+            )}
+            {resumeParseError && (
+              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                {resumeParseError}
+              </div>
+            )}
             <Textarea
               className="min-h-[240px] font-mono text-xs leading-relaxed"
-              placeholder="粘贴简历内容..."
+              placeholder="上传 PDF / 图片后会自动回填，也可以直接粘贴简历内容..."
               value={userInput.originalResume}
               onChange={(e) => setUserInput({ originalResume: e.target.value })}
             />

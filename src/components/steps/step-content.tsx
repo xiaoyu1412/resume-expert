@@ -9,6 +9,7 @@ import { FollowUpStep } from "@/components/steps/follow-up-step";
 import { OptimizeStep } from "@/components/steps/optimize-step";
 import { FinalResumeStep } from "@/components/steps/final-resume-step";
 import { InterviewStep } from "@/components/steps/interview-step";
+import { TemplateStep } from "@/components/steps/template-step";
 import { ExportStep } from "@/components/steps/export-step";
 
 export function StepContent() {
@@ -31,6 +32,8 @@ export function StepContent() {
       return <FinalResumeStep />;
     case "interview":
       return <InterviewStep />;
+    case "template":
+      return <TemplateStep />;
     case "export":
       return <ExportStep />;
     default:
