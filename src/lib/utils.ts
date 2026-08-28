@@ -5,6 +5,7 @@ import {
   getResumeSectionOrder,
 } from "@/lib/resume-sections";
 import type { FinalResume } from "@/types/resume";
+import { parseResumeBullet } from "@/lib/resume-bullets";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -25,6 +26,11 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 
 function stripBoldFormatting(text: string) {
   return text.replace(/\*\*([\s\S]+?)\*\*/g, "$1");
+}
+
+function formatBulletAsText(bullet: string) {
+  const { level, text } = parseResumeBullet(bullet);
+  return `${level === 2 ? "    ◦" : "  •"} ${stripBoldFormatting(text)}`;
 }
 
 export function formatResumeAsText(resume: FinalResume): string {
@@ -59,7 +65,7 @@ export function formatResumeAsText(resume: FinalResume): string {
         lines.push("工作经历");
         resume.workExperience.forEach((work) => {
           lines.push(`${work.company} | ${work.role} | ${work.period}`);
-          work.bullets.forEach((bullet) => lines.push(`  • ${stripBoldFormatting(bullet)}`));
+          work.bullets.forEach((bullet) => lines.push(formatBulletAsText(bullet)));
           lines.push("");
         });
         break;
@@ -67,7 +73,7 @@ export function formatResumeAsText(resume: FinalResume): string {
         lines.push("项目经历");
         resume.projectExperience.forEach((project) => {
           lines.push(`${project.name} | ${project.role} | ${project.period}`);
-          project.bullets.forEach((bullet) => lines.push(`  • ${stripBoldFormatting(bullet)}`));
+          project.bullets.forEach((bullet) => lines.push(formatBulletAsText(bullet)));
           lines.push("");
         });
         break;

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { parseResumeBullet } from "@/lib/resume-bullets";
 import {
   getCustomResumeSection,
   getResumeSectionOrder,
@@ -171,14 +172,24 @@ function BoldText({ text }: { text: string }) {
 function Bullets({ bullets, muted = "#444" }: { bullets: string[]; muted?: string }) {
   return (
     <ul className="mt-2 space-y-1.5">
-      {bullets.map((bullet, index) => (
-        <li key={index} className="flex gap-2 text-[13px] leading-relaxed" style={{ color: muted }}>
-          <span className="mt-[2px] text-[12px]" aria-hidden>
-            •
-          </span>
-          <span><BoldText text={bullet} /></span>
-        </li>
-      ))}
+      {bullets.map((bullet, index) => {
+        const { level, text } = parseResumeBullet(bullet);
+        return (
+          <li
+            key={index}
+            className={cn(
+              "flex gap-2 text-[13px] leading-relaxed",
+              level === 2 && "ml-5"
+            )}
+            style={{ color: muted }}
+          >
+            <span className="mt-[2px] w-2 shrink-0 text-center text-[12px]" aria-hidden>
+              {level === 2 ? "◦" : "•"}
+            </span>
+            <span><BoldText text={text} /></span>
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -674,23 +685,30 @@ function DeepBannerBullet({
   bullet: string;
   pdfBlock?: boolean;
 }) {
-  const labelMatch = bullet.match(
+  const { level, text } = parseResumeBullet(bullet);
+  const labelMatch = text.match(
     /^(背景|任务|行动|结果|职责|项目背景|核心目标|用户价值|技术架构|商业指标|模型选型与工具 AGENT 设计|用户体验与情感设计)[：:]\s*/
   );
 
   return (
     <p
       data-pdf-block={pdfBlock ? "" : undefined}
-      className="whitespace-pre-line text-[11px] leading-[1.52] text-[#333333]"
-    >
-      {labelMatch ? (
-        <>
-          <strong className="font-bold text-neutral-800">{labelMatch[0]}</strong>
-          <BoldText text={bullet.slice(labelMatch[0].length)} />
-        </>
-      ) : (
-        <BoldText text={bullet} />
+      className={cn(
+        "whitespace-pre-line text-[11px] leading-[1.52] text-[#333333]",
+        level === 2 && "ml-[14px] flex gap-[5px]"
       )}
+    >
+      {level === 2 && <span className="shrink-0" aria-hidden>◦</span>}
+      <span>
+        {labelMatch ? (
+          <>
+            <strong className="font-bold text-neutral-800">{labelMatch[0]}</strong>
+            <BoldText text={text.slice(labelMatch[0].length)} />
+          </>
+        ) : (
+          <BoldText text={text} />
+        )}
+      </span>
     </p>
   );
 }

@@ -14,6 +14,8 @@ import {
   ChevronRight,
   ChevronUp,
   ChevronDown,
+  IndentDecrease,
+  IndentIncrease,
   Loader2,
   Plus,
   Save,
@@ -29,6 +31,12 @@ import { ExportFlowIndicator } from "@/components/templates/export-flow-indicato
 import { ResumeTemplateDocument } from "@/components/templates/resume-template-document";
 import { ScaledResumePreview } from "@/components/templates/scaled-resume-preview";
 import { getResumeTemplate } from "@/lib/resume-templates";
+import {
+  normalizeResumeBullet,
+  parseResumeBullet,
+  setResumeBulletLevel,
+  type ResumeBulletLevel,
+} from "@/lib/resume-bullets";
 import {
   DEFAULT_RESUME_SECTION_ORDER,
   getCustomSectionKey,
@@ -148,11 +156,14 @@ function BoldTextarea({
   label,
   value,
   onValueChange,
+  enableIndent = false,
+  onKeyDown,
   ...props
 }: Omit<ComponentProps<"textarea">, "value" | "onChange"> & {
   label?: string;
   value: string;
   onValueChange: (value: string) => void;
+  enableIndent?: boolean;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -193,27 +204,107 @@ function BoldTextarea({
     });
   };
 
+  const changeIndent = (level: ResumeBulletLevel) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const selectionStart = textarea.selectionStart;
+    const selectionEnd = textarea.selectionEnd;
+    const lineStart = value.lastIndexOf("\n", Math.max(0, selectionStart - 1)) + 1;
+    const effectiveEnd =
+      selectionEnd > selectionStart && value[selectionEnd - 1] === "\n"
+        ? selectionEnd - 1
+        : selectionEnd;
+    const nextLineBreak = value.indexOf("\n", effectiveEnd);
+    const lineEnd = nextLineBreak === -1 ? value.length : nextLineBreak;
+    const selectedLines = value.slice(lineStart, lineEnd);
+    let hasPrimaryParent = value
+      .slice(0, lineStart)
+      .split("\n")
+      .some((line) => line.trim() && parseResumeBullet(line).level === 1);
+    const nextLines = selectedLines
+      .split("\n")
+      .map((line) => {
+        if (!line.trim()) return line;
+        if (level === 1) {
+          hasPrimaryParent = true;
+          return setResumeBulletLevel(line, 1);
+        }
+        if (!hasPrimaryParent) {
+          hasPrimaryParent = true;
+          return setResumeBulletLevel(line, 1);
+        }
+        return setResumeBulletLevel(line, 2);
+      })
+      .join("\n");
+    const nextValue = `${value.slice(0, lineStart)}${nextLines}${value.slice(lineEnd)}`;
+
+    onValueChange(nextValue);
+    requestAnimationFrame(() => {
+      textarea.focus();
+      textarea.setSelectionRange(lineStart, lineStart + nextLines.length);
+    });
+  };
+
   return (
     <div className="space-y-1.5">
       <div className="flex min-h-7 items-center justify-between">
         {label ? <Label htmlFor={props.id}>{label}</Label> : <span />}
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="h-7 w-7"
-          title="加粗选中文字"
-          aria-label="加粗选中文字"
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={toggleBold}
-        >
-          <span className="font-serif text-sm font-bold">B</span>
-        </Button>
+        <div className="flex items-center gap-1">
+          {enableIndent && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="h-7 w-7"
+                title="减少缩进"
+                aria-label="减少缩进"
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => changeIndent(1)}
+              >
+                <IndentDecrease className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="h-7 w-7"
+                title="增加缩进"
+                aria-label="增加缩进"
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => changeIndent(2)}
+              >
+                <IndentIncrease className="h-4 w-4" />
+              </Button>
+            </>
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="h-7 w-7"
+            title="加粗选中文字"
+            aria-label="加粗选中文字"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={toggleBold}
+          >
+            <span className="font-serif text-sm font-bold">B</span>
+          </Button>
+        </div>
       </div>
       <Textarea
         ref={textareaRef}
         value={value}
         onChange={(event) => onValueChange(event.target.value)}
+        onKeyDown={(event) => {
+          if (enableIndent && event.key === "Tab") {
+            event.preventDefault();
+            changeIndent(event.shiftKey ? 1 : 2);
+            return;
+          }
+          onKeyDown?.(event);
+        }}
         {...props}
       />
     </div>
@@ -253,11 +344,18 @@ function ExperienceBulletEditor({
       id={id}
       label={label}
       value={value}
+      enableIndent
       placeholder="粘贴或输入内容"
       className="min-h-[140px] leading-relaxed"
       onValueChange={(nextValue) => onChange(nextValue.split("\n"))}
       onPaste={handlePaste}
-      onBlur={() => onChange(bullets.map((bullet) => bullet.trim()).filter(Boolean))}
+      onBlur={() =>
+        onChange(
+          bullets
+            .map(normalizeResumeBullet)
+            .filter((bullet) => Boolean(bullet.trim()))
+        )
+      }
     />
   );
 }
