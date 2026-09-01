@@ -335,6 +335,7 @@ function buildFinalResume(input: UserInput): AnalysisResult["finalResume"] {
     workExperience: [
       {
         company: "某 SaaS 公司",
+        productName: "WMS 仓储管理系统",
         role: "产品经理",
         period: "2021.06 - 至今",
         bullets: [
@@ -346,6 +347,7 @@ function buildFinalResume(input: UserInput): AnalysisResult["finalResume"] {
       },
       {
         company: "某软件公司",
+        productName: "ERP 采购模块",
         role: "产品助理",
         period: "2020.07 - 2021.05",
         bullets: [

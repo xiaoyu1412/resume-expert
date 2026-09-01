@@ -94,6 +94,7 @@ export interface OptimizedItem {
 
 export interface WorkExperience {
   company: string;
+  productName: string;
   role: string;
   period: string;
   bullets: string[];

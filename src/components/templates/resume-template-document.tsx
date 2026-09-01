@@ -195,7 +195,16 @@ function Bullets({ bullets, muted = "#444" }: { bullets: string[]; muted?: strin
 }
 
 function ExperienceBlock({ item, type }: { item: WorkExperience | ProjectExperience; type: "work" | "project" }) {
-  const title = type === "work" ? `${(item as WorkExperience).company} · ${item.role}` : `${(item as ProjectExperience).name} · ${item.role}`;
+  const title =
+    type === "work"
+      ? [
+          (item as WorkExperience).company,
+          (item as WorkExperience).productName,
+          item.role,
+        ]
+          .filter(Boolean)
+          .join(" · ")
+      : [(item as ProjectExperience).name, item.role].filter(Boolean).join(" · ");
 
   return (
     <div data-pdf-block className="break-inside-avoid">
@@ -722,7 +731,15 @@ function DeepBannerExperienceBlock({
 }) {
   const title =
     type === "work"
-      ? `“${(item as WorkExperience).company}” | ${item.role}`
+      ? [
+          (item as WorkExperience).company
+            ? `“${(item as WorkExperience).company}”`
+            : "",
+          (item as WorkExperience).productName,
+          item.role,
+        ]
+          .filter(Boolean)
+          .join(" | ")
       : `${(item as ProjectExperience).name} | ${item.role}`;
   const [firstBullet, ...remainingBullets] = item.bullets;
 

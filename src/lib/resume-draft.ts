@@ -127,16 +127,21 @@ function parseExperienceLines<T extends WorkExperience | ProjectExperience>(
       const periodIndex = parts.findIndex((part, index) => index > 0 && DATE_PATTERN.test(part));
       const roleEnd = periodIndex > 1 ? periodIndex : Math.max(parts.length - 1, 2);
       const period = periodIndex > 0 ? parts.slice(periodIndex).join(" - ") : parts.slice(2).join(" | ");
+      const detailParts = parts.slice(1, roleEnd);
       current = (kind === "work"
         ? {
             company: parts[0] ?? "",
-            role: parts.slice(1, roleEnd).join(" | ") || parts[1] || "",
+            productName: detailParts.length >= 2 ? detailParts[0] : "",
+            role:
+              (detailParts.length >= 2 ? detailParts.slice(1) : detailParts).join(" | ") ||
+              parts[1] ||
+              "",
             period,
             bullets: [],
           }
         : {
             name: parts[0] ?? "",
-            role: parts.slice(1, roleEnd).join(" | ") || parts[1] || "",
+            role: detailParts.join(" | ") || parts[1] || "",
             period,
             bullets: [],
           }) as unknown as T;
@@ -213,6 +218,13 @@ export function normalizeResumeDraft(resume: FinalResume, sourceText = ""): Fina
       ...resume.personalInfo,
       portfolio: resume.personalInfo.portfolio ?? "",
     },
+    workExperience: Array.isArray(resume.workExperience)
+      ? resume.workExperience.map((item) => ({
+          ...item,
+          productName:
+            typeof item.productName === "string" ? item.productName.trim() : "",
+        }))
+      : [],
     sectionOrder: Array.isArray(resume.sectionOrder)
       ? resume.sectionOrder
       : [...DEFAULT_RESUME_SECTION_ORDER],

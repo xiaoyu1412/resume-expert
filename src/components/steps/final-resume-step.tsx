@@ -701,7 +701,13 @@ export function FinalResumeStep() {
                     ...resume,
                     workExperience: [
                       ...resume.workExperience,
-                      { company: "", role: "", period: "", bullets: [""] },
+                      {
+                        company: "",
+                        productName: "",
+                        role: "",
+                        period: "",
+                        bullets: [""],
+                      },
                     ],
                   }))
                 }
@@ -735,10 +741,27 @@ export function FinalResumeStep() {
                     }
                   />
                 </div>
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <Input placeholder="公司" value={work.company} onChange={(event) => updateWork(index, { company: event.target.value })} />
-                  <Input placeholder="职位" value={work.role} onChange={(event) => updateWork(index, { role: event.target.value })} />
-                  <Input placeholder="时间" value={work.period} onChange={(event) => updateWork(index, { period: event.target.value })} />
+                <div className="grid gap-3 sm:grid-cols-4">
+                  <Input
+                    placeholder="公司名称"
+                    value={work.company}
+                    onChange={(event) => updateWork(index, { company: event.target.value })}
+                  />
+                  <Input
+                    placeholder="产品名称"
+                    value={work.productName}
+                    onChange={(event) => updateWork(index, { productName: event.target.value })}
+                  />
+                  <Input
+                    placeholder="职位"
+                    value={work.role}
+                    onChange={(event) => updateWork(index, { role: event.target.value })}
+                  />
+                  <Input
+                    placeholder="时间"
+                    value={work.period}
+                    onChange={(event) => updateWork(index, { period: event.target.value })}
+                  />
                 </div>
                 <ExperienceBulletEditor
                   id={`work-bullets-${index}`}

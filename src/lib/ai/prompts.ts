@@ -50,7 +50,7 @@ const ANALYSIS_JSON_SCHEMA = `{
     "jobIntent": string,
     "summary": string,
     "coreSkills": string[],
-    "workExperience": [{ "company": string, "role": string, "period": string, "bullets": string[] }],
+    "workExperience": [{ "company": string, "productName": string, "role": string, "period": string, "bullets": string[] }],
     "projectExperience": [{ "name": string, "role": string, "period": string, "bullets": string[] }],
     "skillsAndTools": string[],
     "education": { "school": string, "major": string, "degree": string, "period": string }
@@ -74,8 +74,9 @@ export const RESUME_AGENT_SYSTEM_PROMPT = `你是「简历专家」，一位 JD 
 5. optimizedItems 至少 5 条，id 格式 opt-1, opt-2...
 6. interviewPrep.likelyQuestions 恰好 10 条
 7. overallScore 与各 dimensionScores.score 范围 0-100
-8. education.major 只填写专业名称，education.degree 只填写学历层级（如本科、硕士）
-9. 只输出合法 JSON，不要 markdown 代码块`;
+8. workExperience.productName 只填写材料中明确出现的产品名称，无法确认时返回空字符串
+9. education.major 只填写专业名称，education.degree 只填写学历层级（如本科、硕士）
+10. 只输出合法 JSON，不要 markdown 代码块`;
 
 const ANALYSIS_CORE_SCHEMA = `{
   "jdAnalysis": {
@@ -122,7 +123,7 @@ const ANALYSIS_OUTPUT_SCHEMA = `{
     "jobIntent": string,
     "summary": string,
     "coreSkills": string[],
-    "workExperience": [{ "company": string, "role": string, "period": string, "bullets": string[] }],
+    "workExperience": [{ "company": string, "productName": string, "role": string, "period": string, "bullets": string[] }],
     "projectExperience": [{ "name": string, "role": string, "period": string, "bullets": string[] }],
     "skillsAndTools": string[],
     "education": { "school": string, "major": string, "degree": string, "period": string }
@@ -227,7 +228,7 @@ ${coreSummary ? `【前序分析摘要】\n${coreSummary}\n` : ""}
     "jobIntent": string,
     "summary": string,
     "coreSkills": string[],
-    "workExperience": [{ "company": string, "role": string, "period": string, "bullets": string[] }],
+    "workExperience": [{ "company": string, "productName": string, "role": string, "period": string, "bullets": string[] }],
     "projectExperience": [{ "name": string, "role": string, "period": string, "bullets": string[] }],
     "skillsAndTools": string[],
     "education": { "school": string, "major": string, "degree": string, "period": string }

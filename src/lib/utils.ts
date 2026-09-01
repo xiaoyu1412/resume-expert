@@ -64,7 +64,11 @@ export function formatResumeAsText(resume: FinalResume): string {
       case "workExperience":
         lines.push("工作经历");
         resume.workExperience.forEach((work) => {
-          lines.push(`${work.company} | ${work.role} | ${work.period}`);
+          lines.push(
+            [work.company, work.productName, work.role, work.period]
+              .filter(Boolean)
+              .join(" | ")
+          );
           work.bullets.forEach((bullet) => lines.push(formatBulletAsText(bullet)));
           lines.push("");
         });
