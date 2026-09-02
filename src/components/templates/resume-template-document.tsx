@@ -919,7 +919,7 @@ function DeepBannerTemplate({
         </div>
         <div className="absolute left-[166px] right-[106px] top-[53px] z-10 h-px bg-white/80" />
         <div className="absolute left-[166px] right-[64px] top-[64px] z-10">
-          <div className="grid grid-cols-[190px_minmax(0,1fr)] gap-x-5 text-[11.5px] leading-[1.62] text-[#eeeeee]">
+          <div className="grid grid-cols-2 gap-x-8 text-[11.5px] leading-[1.62] text-[#eeeeee]">
             {sectionOrder.includes("education") && resume.education.degree && (
               <p>学历：{resume.education.degree}</p>
             )}
