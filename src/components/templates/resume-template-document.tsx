@@ -925,15 +925,19 @@ function DeepBannerTemplate({
             )}
             {resume.personalInfo.phone && <p>电话：{resume.personalInfo.phone}</p>}
             {resume.personalInfo.location?.trim() && <p>现居地：{resume.personalInfo.location}</p>}
-            {resume.personalInfo.email && (
-              <p className="col-span-2 whitespace-nowrap text-[11.5px]">
-                邮箱：{resume.personalInfo.email}
-              </p>
-            )}
-            {resume.personalInfo.portfolio && (
-              <p className="col-span-2 whitespace-nowrap">
-                作品集：{resume.personalInfo.portfolio}
-              </p>
+            {(resume.personalInfo.email || resume.personalInfo.portfolio) && (
+              <div className="col-span-2 grid grid-cols-[minmax(0,5fr)_minmax(0,3fr)] gap-x-4">
+                {resume.personalInfo.email && (
+                  <p className="min-w-0 whitespace-nowrap text-[11.5px]">
+                    邮箱：{resume.personalInfo.email}
+                  </p>
+                )}
+                {resume.personalInfo.portfolio && (
+                  <p className="min-w-0 whitespace-nowrap">
+                    作品集：{resume.personalInfo.portfolio}
+                  </p>
+                )}
+              </div>
             )}
           </div>
         </div>
