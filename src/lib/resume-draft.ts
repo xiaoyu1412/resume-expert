@@ -216,6 +216,7 @@ export function normalizeResumeDraft(resume: FinalResume, sourceText = ""): Fina
     ...resume,
     personalInfo: {
       ...resume.personalInfo,
+      location: resume.personalInfo.location?.trim() ?? "",
       portfolio: resume.personalInfo.portfolio ?? "",
     },
     workExperience: Array.isArray(resume.workExperience)

@@ -924,14 +924,14 @@ function DeepBannerTemplate({
               <p>学历：{resume.education.degree}</p>
             )}
             {resume.personalInfo.phone && <p>电话：{resume.personalInfo.phone}</p>}
-            {resume.personalInfo.location && <p>现居地：{resume.personalInfo.location}</p>}
+            {resume.personalInfo.location?.trim() && <p>现居地：{resume.personalInfo.location}</p>}
             {resume.personalInfo.email && (
-              <p className="whitespace-nowrap text-[11.5px]">
+              <p className="col-span-2 whitespace-nowrap text-[11.5px]">
                 邮箱：{resume.personalInfo.email}
               </p>
             )}
             {resume.personalInfo.portfolio && (
-              <p className="whitespace-nowrap">
+              <p className="col-span-2 whitespace-nowrap">
                 作品集：{resume.personalInfo.portfolio}
               </p>
             )}

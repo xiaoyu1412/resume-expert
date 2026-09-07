@@ -508,13 +508,14 @@ export function FinalResumeStep() {
                   ["name", "姓名"],
                   ["email", "邮箱"],
                   ["phone", "电话"],
-                  ["location", "所在地"],
+                  ["location", "所在地（选填）"],
                 ] as const
               ).map(([field, label]) => (
                 <div key={field} className="space-y-1.5">
                   <Label htmlFor={`personal-${field}`}>{label}</Label>
                   <Input
                     id={`personal-${field}`}
+                    placeholder={field === "location" ? "如：上海" : undefined}
                     value={draftResume.personalInfo[field]}
                     onChange={(event) =>
                       updateDraftResume((resume) => ({
