@@ -86,8 +86,8 @@ export function InterviewStep() {
       </div>
 
       <div className="flex justify-end">
-        <Button variant="outline" size="sm" onClick={() => setCurrentStep("export")}>
-          下一步：导出结果
+        <Button variant="outline" size="sm" onClick={() => setCurrentStep("template")}>
+          下一步：选择模板
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>

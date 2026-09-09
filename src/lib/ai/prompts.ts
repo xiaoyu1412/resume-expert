@@ -5,6 +5,8 @@ import type {
   UserInput,
 } from "@/types/resume";
 import { STYLE_LABELS } from "@/lib/ai/types";
+import { DEFAULT_RESUME_SECTION_ORDER } from "@/lib/resume-sections";
+import { normalizeEducation } from "@/lib/resume-draft";
 
 const ANALYSIS_JSON_SCHEMA = `{
   "jdAnalysis": {
@@ -44,14 +46,14 @@ const ANALYSIS_JSON_SCHEMA = `{
     "riskWarning": string
   }],
   "finalResume": {
-    "personalInfo": { "name": string, "email": string, "phone": string, "location": string },
+    "personalInfo": { "name": string, "email": string, "phone": string, "location": string, "portfolio": string },
     "jobIntent": string,
     "summary": string,
     "coreSkills": string[],
-    "workExperience": [{ "company": string, "role": string, "period": string, "bullets": string[] }],
+    "workExperience": [{ "company": string, "productName": string, "role": string, "period": string, "bullets": string[] }],
     "projectExperience": [{ "name": string, "role": string, "period": string, "bullets": string[] }],
     "skillsAndTools": string[],
-    "education": { "school": string, "degree": string, "period": string }
+    "education": { "school": string, "major": string, "degree": string, "period": string }
   },
   "interviewPrep": {
     "likelyQuestions": [{ "question": string, "suggestedAnswer": string, "evidenceNeeded": string[] }],
@@ -72,7 +74,9 @@ export const RESUME_AGENT_SYSTEM_PROMPT = `你是「简历专家」，一位 JD 
 5. optimizedItems 至少 5 条，id 格式 opt-1, opt-2...
 6. interviewPrep.likelyQuestions 恰好 10 条
 7. overallScore 与各 dimensionScores.score 范围 0-100
-8. 只输出合法 JSON，不要 markdown 代码块`;
+8. workExperience.productName 只填写材料中明确出现的产品名称，无法确认时返回空字符串
+9. education.major 只填写专业名称，education.degree 只填写学历层级（如本科、硕士）
+10. 只输出合法 JSON，不要 markdown 代码块`;
 
 const ANALYSIS_CORE_SCHEMA = `{
   "jdAnalysis": {
@@ -115,14 +119,14 @@ const ANALYSIS_OUTPUT_SCHEMA = `{
     "riskWarning": string
   }],
   "finalResume": {
-    "personalInfo": { "name": string, "email": string, "phone": string, "location": string },
+    "personalInfo": { "name": string, "email": string, "phone": string, "location": string, "portfolio": string },
     "jobIntent": string,
     "summary": string,
     "coreSkills": string[],
-    "workExperience": [{ "company": string, "role": string, "period": string, "bullets": string[] }],
+    "workExperience": [{ "company": string, "productName": string, "role": string, "period": string, "bullets": string[] }],
     "projectExperience": [{ "name": string, "role": string, "period": string, "bullets": string[] }],
     "skillsAndTools": string[],
-    "education": { "school": string, "degree": string, "period": string }
+    "education": { "school": string, "major": string, "degree": string, "period": string }
   },
   "interviewPrep": {
     "likelyQuestions": [{ "question": string, "suggestedAnswer": string, "evidenceNeeded": string[] }],
@@ -220,14 +224,14 @@ ${coreSummary ? `【前序分析摘要】\n${coreSummary}\n` : ""}
     "riskWarning": string
   }],
   "finalResume": {
-    "personalInfo": { "name": string, "email": string, "phone": string, "location": string },
+    "personalInfo": { "name": string, "email": string, "phone": string, "location": string, "portfolio": string },
     "jobIntent": string,
     "summary": string,
     "coreSkills": string[],
-    "workExperience": [{ "company": string, "role": string, "period": string, "bullets": string[] }],
+    "workExperience": [{ "company": string, "productName": string, "role": string, "period": string, "bullets": string[] }],
     "projectExperience": [{ "name": string, "role": string, "period": string, "bullets": string[] }],
     "skillsAndTools": string[],
-    "education": { "school": string, "degree": string, "period": string }
+    "education": { "school": string, "major": string, "degree": string, "period": string }
   }
 }
 
@@ -352,6 +356,7 @@ export function normalizeAnalysisResult(raw: AnalysisResult, input?: UserInput):
         email: raw.finalResume?.personalInfo?.email ?? "",
         phone: raw.finalResume?.personalInfo?.phone ?? "",
         location: raw.finalResume?.personalInfo?.location ?? "",
+        portfolio: raw.finalResume?.personalInfo?.portfolio ?? "",
       },
       jobIntent: raw.finalResume?.jobIntent || (input ? `${input.targetRole} | ${input.industry}` : ""),
       summary: raw.finalResume?.summary ?? "",
@@ -359,7 +364,9 @@ export function normalizeAnalysisResult(raw: AnalysisResult, input?: UserInput):
       workExperience: raw.finalResume?.workExperience ?? [],
       projectExperience: raw.finalResume?.projectExperience ?? [],
       skillsAndTools: raw.finalResume?.skillsAndTools ?? [],
-      education: raw.finalResume?.education ?? { school: "", degree: "", period: "" },
+      education: normalizeEducation(raw.finalResume?.education, input?.originalResume),
+      sectionOrder: [...DEFAULT_RESUME_SECTION_ORDER],
+      customSections: [],
     },
     interviewPrep: {
       likelyQuestions: raw.interviewPrep?.likelyQuestions ?? [],

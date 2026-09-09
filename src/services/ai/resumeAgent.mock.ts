@@ -1,4 +1,5 @@
 import { delay } from "@/lib/utils";
+import { DEFAULT_RESUME_SECTION_ORDER } from "@/lib/resume-sections";
 import type {
   AnalysisResult,
   OptimizeStyle,
@@ -319,6 +320,7 @@ function buildFinalResume(input: UserInput): AnalysisResult["finalResume"] {
       email: "zhangming@email.com",
       phone: "138****5678",
       location: "上海",
+      portfolio: "https://zhangming.design",
     },
     jobIntent: `${input.targetRole} | ${input.industry}`,
     summary:
@@ -333,6 +335,7 @@ function buildFinalResume(input: UserInput): AnalysisResult["finalResume"] {
     workExperience: [
       {
         company: "某 SaaS 公司",
+        productName: "WMS 仓储管理系统",
         role: "产品经理",
         period: "2021.06 - 至今",
         bullets: [
@@ -344,6 +347,7 @@ function buildFinalResume(input: UserInput): AnalysisResult["finalResume"] {
       },
       {
         company: "某软件公司",
+        productName: "ERP 采购模块",
         role: "产品助理",
         period: "2020.07 - 2021.05",
         bullets: [
@@ -387,9 +391,12 @@ function buildFinalResume(input: UserInput): AnalysisResult["finalResume"] {
     ],
     education: {
       school: "某大学",
-      degree: "信息管理与信息系统 | 本科",
+      major: "信息管理与信息系统",
+      degree: "本科",
       period: "2016 - 2020",
     },
+    sectionOrder: [...DEFAULT_RESUME_SECTION_ORDER],
+    customSections: [],
   };
 }
 
